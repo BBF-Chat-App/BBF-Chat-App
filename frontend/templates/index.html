@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Konuşma Odası</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    </head>
+    <body class="d-flex flex-column m-0 p-0" style="height: 100vh; width: 100vw;">
+        <div class="position-relative bg-body-tertiary w-100 h-100">
+
+            <div class="pt-2"><h2 class="p-0 m-0 text-center">Konuşma Odası</h2></div>
+
+            <div id="messages" class="w-100 overflow-y-scroll d-flex flex-column position-relative" style="height: calc( 100% - 106px )">
+            
+            </div>
+              
+            <form onsubmit="return sendMessage()" class="bg-secondary position-relative p-3" style="bottom: 0px; left: 0px; width: 100%;">
+                <div class="input-group">
+                    <input id="message_input" type="text" class="form-control" placeholder="Bir mesaj yazın." aria-label="Bir mesaj yazın." aria-describedby="button-addon2">
+                    <button class="btn btn-light" type="submit" id="button-addon2">Gönder</button>
+                </div>
+            </form>
+        </div>
+
+        <style>
+            *{
+                overflow: hidden;
+            }
+        </style>
+
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+            socket.on('message', function(data) {
+                displayMessage(data.username, data.message);
+            });
+
+            socket.on('update_messages', function(data) {
+                // Update the messages on the page
+                var ul = document.getElementById('messages');
+                ul.innerHTML = '';  // Clear existing messages
+
+                data.messages.forEach(function(msg) {
+                    displayMessage(msg.sender, msg.message);
+                });
+            });
+
+
+            function sendMessage() {
+                var input = document.getElementById('message_input');
+                var message = input.value;
+                socket.emit('message', { username: '{{ username }}', message: message });
+                input.value = '';
+
+                // Prevent the form from submitting
+                return false;
+            }
+
+            function displayMessage(username, message) {
+                var div = document.getElementById('messages');
+                var div_inside = document.createElement('div');
+
+                var serverUsername = "{{ username }}";
+                
+                if (username == serverUsername) {
+                    div_inside.innerHTML = `<div class="w-100 p-2 text-end"><a class="w-auto px-4 py-2 bg-success-subtle br-2 rounded-pill text-dark text-decoration-none">${username} - ${message}</a></div>`
+                }
+                else{
+                    div_inside.innerHTML =`<div class="w-100 p-2 text-start"><a class="w-auto px-4 py-2 bg-secondary br-2 rounded-pill text-white text-decoration-none">${username} - ${message}</a></div>`
+                }
+
+                div.appendChild(div_inside);
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+    </body>
+</html>
